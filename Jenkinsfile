@@ -23,7 +23,7 @@ pipeline {
     }
   stage('Docker Run') {
       steps {
-         sh '/usr/bin/docker run -t --name address-container -p 8083:8083 address-service'
+         sh 'nohup /usr/bin/docker run -t --name address-container -p 8083:8083 address-service &'
       }
     } 
   }

@@ -1,6 +1,7 @@
 pipeline {
   agent any
   tools { 
+        java  'JAVA_HOME'
         maven 'Maven'
   }
   stages {
@@ -12,9 +13,7 @@ pipeline {
     }
     stage('Build') {
       steps {
-        sh 'mvn -B -DskipTests clean package'
-        sh 'echo $USER'
-        sh 'echo whoami'
+        sh 'mvn clean install'
       }
     }
     stage('Docker Build') {
@@ -22,19 +21,9 @@ pipeline {
         sh '/usr/bin/docker build -t address-service .'
       }
     }
-   
-    stage('push image to ECR'){
+  stage('Docker Run') {
       steps {
-       withDockerRegistry(credentialsId: 'ecr:us-east-1:aws-credentials', url: 'http://092390458462.dkr.ecr.us-east-1.amazonaws.com/address-service') {
-          sh 'docker tag address-service:latest 092390458462.dkr.ecr.us-east-1.amazonaws.com/address-service:latest'
-          sh 'docker push 092390458462.dkr.ecr.us-east-1.amazonaws.com/address-service:latest'
-        } 
-      }
-    }
-  stage('deploy to ECR') {
-      steps {
-         sh 'kubectl apply -f deployment.yaml' 
-         sh 'kubectl apply -f service.yaml'
+         sh '/usr/bin/docker run -t --name address-container -p 8083:8083 address-service'
       }
     } 
   }
